@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raak Fast Food</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fdf2f8; 
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+        }
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Touch target improvements */
+        button {
+            touch-action: manipulation;
+        }
+        .food-card-hover {
+            transition: all 0.3s ease;
+        }
+        .food-card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .animate-bounce-short {
+            animation: bounce-short 0.5s ease-in-out 1;
+        }
+        @keyframes bounce-short {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .modal-enter {
+            animation: slide-up 0.3s ease-out forwards;
+        }
+        @keyframes slide-up {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Active Category Style */
+        .category-active {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white !important;
+        }
+
+        /* --- Fast Food Background Animation --- */
+        .combo-bg-animated {
+            background: linear-gradient(to bottom, #fff7ed, #fff1f2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .floating-emoji {
+            position: absolute;
+            bottom: -100px; /* Start below screen */
+            font-size: 3rem;
+            opacity: 0;
+            pointer-events: none; /* Let clicks pass through */
+            animation: floatUp linear infinite;
+            filter: grayscale(0.2);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.15; /* Low opacity so text is readable */
+            }
+            90% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(-800px) rotate(360deg) scale(1.1);
+                opacity: 0;
+            }
+        }
+        
+        /* Different speeds and positions for randomness */
+        .emoji-1 { left: 5%; animation-duration: 15s; animation-delay: 0s; font-size: 4rem; }
+        .emoji-2 { left: 15%; animation-duration: 23s; animation-delay: 2s; font-size: 2.5rem; }
+        .emoji-3 { left: 25%; animation-duration: 18s; animation-delay: 5s; font-size: 3rem; }
+        .emoji-4 { left: 40%; animation-duration: 20s; animation-delay: 1s; font-size: 5rem; }
+        .emoji-5 { left: 55%; animation-duration: 16s; animation-delay: 3s; font-size: 3.5rem; }
+        .emoji-6 { left: 70%; animation-duration: 25s; animation-delay: 6s; font-size: 4rem; }
+        .emoji-7 { left: 85%; animation-duration: 19s; animation-delay: 4s; font-size: 3rem; }
+        .emoji-8 { left: 95%; animation-duration: 22s; animation-delay: 0s; font-size: 4.5rem; }
+        
+        /* Additional Emojis */
+        .emoji-9 { left: 10%; animation-duration: 21s; animation-delay: 1s; font-size: 3.5rem; }
+        .emoji-10 { left: 30%; animation-duration: 17s; animation-delay: 4s; font-size: 2.8rem; }
+        .emoji-11 { left: 50%; animation-duration: 24s; animation-delay: 2s; font-size: 4.2rem; }
+        .emoji-12 { left: 65%; animation-duration: 19s; animation-delay: 5s; font-size: 3rem; }
+        .emoji-13 { left: 80%; animation-duration: 22s; animation-delay: 1s; font-size: 3.8rem; }
+        .emoji-14 { left: 90%; animation-duration: 16s; animation-delay: 3s; font-size: 2.5rem; }
+        .emoji-15 { left: 20%; animation-duration: 26s; animation-delay: 0s; font-size: 4rem; }
+
+        /* --- Header Animations --- */
+        @keyframes flame-pulse {
+            0%, 100% { transform: scale(1); filter: brightness(100%); }
+            50% { transform: scale(1.2); filter: brightness(120%) drop-shadow(0 0 5px rgba(249, 115, 22, 0.6)); }
+        }
+        .animate-flame-custom {
+            animation: flame-pulse 1.2s infinite ease-in-out;
+        }
+
+        @keyframes text-flash {
+            0%, 100% { color: #1f2937; transform: scale(1); } /* gray-800 */
+            50% { color: #ea580c; transform: scale(1.02); text-shadow: 1px 1px 0px rgba(0,0,0,0.1); } /* orange-600 */
+        }
+        .animate-title-flash {
+            animation: text-flash 1.5s infinite ease-in-out;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 pb-24">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-red-600 shadow-lg text-white">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i data-lucide="utensils-crossed" class="w-6 h-6"></i>
+                <span class="text-2xl font-bold tracking-wide brand-font">RAAK FAST FOOD</span>
+            </div>
+            <button onclick="toggleCart()" class="relative p-2 hover:bg-red-700 rounded-full transition">
+                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                <span id="cart-badge" class="absolute top-0 right-0 bg-yellow-400 text-red-900 text-xs font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative bg-gradient-to-r from-red-600 to-orange-500 text-white py-16 px-4 text-center overflow-hidden">
+        <div class="absolute inset-0 opacity-10 pattern-dots"></div>
+        <div class="relative z-10 max-w-2xl mx-auto">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Craving Something Spicy?</h1>
+            <p class="text-lg md:text-xl opacity-90 mb-8">Best Momos, Burgers & Chaat in Town!</p>
+            <a href="#menu" class="inline-block bg-yellow-400 text-red-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-300 transition transform hover:scale-105">
+                View Menu
+            </a>
+        </div>
+    </header>
+
+    <!-- Combo Offers Section -->
+    <section class="combo-bg-animated w-full py-12 relative">
+        
+        <!-- Animated Elements Layer -->
+        <div class="absolute inset-0 z-0 overflow-hidden">
+            <span class="floating-emoji emoji-1">🍔</span>
+            <span class="floating-emoji emoji-2">🍟</span>
+            <span class="floating-emoji emoji-3">🥤</span>
+            <span class="floating-emoji emoji-4">🍕</span>
+            <span class="floating-emoji emoji-5">🍗</span>
+            <span class="floating-emoji emoji-6">🌮</span>
+            <span class="floating-emoji emoji-7">🌭</span>
+            <span class="floating-emoji emoji-8">🍟</span>
+            <span class="floating-emoji emoji-9">🍔</span>
+            <span class="floating-emoji emoji-10">🥤</span>
+            <span class="floating-emoji emoji-11">🍕</span>
+            <span class="floating-emoji emoji-12">🍗</span>
+            <span class="floating-emoji emoji-13">🌮</span>
+            <span class="floating-emoji emoji-14">🌭</span>
+            <span class="floating-emoji emoji-15">🍟</span>
+        </div>
+
+        <!-- Content Layer -->
+        <div class="max-w-6xl mx-auto px-4 relative z-10">
+            <div class="flex items-center gap-2 mb-6">
+                <i data-lucide="flame" class="text-orange-500 w-8 h-8 fill-orange-100 animate-flame-custom"></i>
+                <h2 class="text-3xl font-bold text-gray-800 uppercase drop-shadow-sm animate-title-flash">Super Saver Combos</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="combo-container">
+                <!-- Combos will be injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Menu -->
+    <section id="menu" class="max-w-6xl mx-auto px-4 py-8 bg-white rounded-t-3xl shadow-inner min-h-screen z-20 relative">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 uppercase brand-font">Our Menu</h2>
+            <div class="flex gap-2 overflow-x-auto pb-2 scroll-hide" id="category-container">
+                <button onclick="setCategory('All')" class="category-btn category-active px-4 py-1 bg-gray-200 text-gray-700 rounded-full text-sm whitespace-nowrap font-medium transition hover:bg-gray-300">All</button>
+                <button onclick="setCategory('Momos')" class="category-btn px-4 py-1 bg-gray-200 text-gray-700 rounded-full text-sm whitespace-nowrap font-medium transition hover:bg-gray-300">Momos</button>
+                <button onclick="setCategory('Chaat')" class="category-btn px-4 py-1 bg-gray-200 text-gray-700 rounded-full text-sm whitespace-nowrap font-medium transition hover:bg-gray-300">Chaat</button>
+                <button onclick="setCategory('Burgers')" class="category-btn px-4 py-1 bg-gray-200 text-gray-700 rounded-full text-sm whitespace-nowrap font-medium transition hover:bg-gray-300">Burgers</button>
+                <button onclick="setCategory('Rice')" class="category-btn px-4 py-1 bg-gray-200 text-gray-700 rounded-full text-sm whitespace-nowrap font-medium transition hover:bg-gray-300">Rice</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="menu-container">
+            <!-- Menu items will be injected by JS -->
+        </div>
+    </section>
+
+    <!-- Bottom Cart Bar (Sticky) -->
+    <div id="bottom-cart" class="fixed bottom-0 left-0 w-full bg-white shadow-[0_-5px_15px_rgba(0,0,0,0.1)] p-4 transform translate-y-full transition-transform duration-300 z-50 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div onclick="toggleCart()" class="cursor-pointer">
+                <p class="text-xs text-gray-500 uppercase font-semibold">Total</p>
+                <p class="text-2xl font-bold text-gray-900" id="sticky-total">₹0</p>
+                <p class="text-xs text-green-600" id="sticky-count">0 Items</p>
+            </div>
+            <button onclick="toggleCart()" class="bg-red-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-red-700 transition flex items-center gap-2">
+                View Cart <i data-lucide="chevron-up" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Full Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden flex items-end sm:items-center justify-center backdrop-blur-sm">
+        <div class="bg-white w-full sm:max-w-md h-[90vh] sm:h-auto sm:max-h-[85vh] sm:rounded-2xl rounded-t-2xl flex flex-col shadow-2xl modal-enter">
+            
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 sm:rounded-t-2xl shrink-0">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    <i data-lucide="shopping-cart" class="text-red-600"></i> Your Order
+                </h2>
+                <button onclick="toggleCart()" class="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Cart Items Area -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Items injected here -->
+            </div>
+
+            <!-- Bill Details -->
+            <div class="p-4 bg-gray-50 border-t border-gray-100 sm:rounded-b-2xl shrink-0">
+                <div class="flex justify-between mb-2 text-sm">
+                    <span class="text-gray-600">Item Total</span>
+                    <span class="font-bold" id="modal-subtotal">₹0</span>
+                </div>
+                <div class="flex justify-between mb-4 text-xl font-bold text-gray-900">
+                    <span>Grand Total</span>
+                    <span id="modal-total">₹0</span>
+                </div>
+                <button onclick="openPaymentModal()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition flex justify-center items-center gap-2">
+                    Checkout <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[70] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden modal-enter max-h-[90vh] overflow-y-auto">
+            <div class="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center sticky top-0">
+                <h3 class="font-bold text-lg">Pay & Verify</h3>
+                <button onclick="closePaymentModal()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div class="text-center mb-6">
+                    <p class="text-gray-500 text-sm">Amount to Pay</p>
+                    <p class="text-3xl font-bold text-gray-800" id="payment-amount">₹0</p>
+                </div>
+
+                <!-- Payment Options -->
+                <div class="space-y-3">
+                    <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition" onclick="selectPayment('online')">
+                        <input type="radio" name="payment" value="online" class="w-5 h-5 text-blue-600" id="radio-online">
+                        <div class="ml-3 flex-1">
+                            <span class="block font-bold text-gray-800">Pay Online (UPI)</span>
+                            <span class="text-xs text-gray-500">PhonePe, GPay, Paytm</span>
+                        </div>
+                        <i data-lucide="smartphone" class="text-blue-500"></i>
+                    </label>
+
+                    <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-green-50 hover:border-green-300 transition" onclick="selectPayment('cod')">
+                        <input type="radio" name="payment" value="cod" class="w-5 h-5 text-green-600" id="radio-cod">
+                        <div class="ml-3 flex-1">
+                            <span class="block font-bold text-gray-800">Cash on Delivery</span>
+                            <span class="text-xs text-gray-500">Pay when you receive</span>
+                        </div>
+                        <i data-lucide="banknote" class="text-green-500"></i>
+                    </label>
+                </div>
+
+                <!-- QR Code Section (Hidden by default) -->
+                <div id="qr-section" class="hidden mt-4 text-center bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+                    <p class="text-sm font-semibold mb-2 text-gray-700">Scan with PhonePe / GPay</p>
+                    <div id="qrcode" class="flex justify-center mb-2"></div>
+                    <p class="text-xs text-gray-500">Merchant: Raak Fast Food</p>
+                </div>
+
+                <!-- UTR/Reference ID Input (Hidden by default) -->
+                <div id="utr-section" class="hidden mt-3">
+                    <label class="block text-xs font-bold text-gray-600 mb-1 ml-1">Payment Verification</label>
+                    <input type="text" id="payment-ref" placeholder="Enter UTR / Ref No. (e.g. 324...)" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 text-gray-900 placeholder-gray-400">
+                    <div class="flex gap-2 items-start mt-2 bg-blue-50 p-2 rounded text-[11px] text-blue-800">
+                        <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                        <p>After paying, verify the Transaction ID from your UPI app here to confirm order.</p>
+                    </div>
+                </div>
+                
+                <!-- Action Button -->
+                <button id="confirm-order-btn" onclick="processOrder()" class="w-full bg-gray-300 text-gray-600 py-3 rounded-xl font-bold mt-4 cursor-not-allowed" disabled>
+                    Select Payment Method
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- Data (Updated with Categories) ---
+        const menuItems = [
+            { id: 1, name: "Raak Special Burger", price: 80, category: "Burgers", desc: "Spicy patty with fresh veggies", img: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&q=80&w=400" },
+            { id: 2, name: "Steamed Momos", price: 60, category: "Momos", desc: "6pcs served with spicy chutney", img: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=400" },
+            { id: 3, name: "Fried Momos", price: 70, category: "Momos", desc: "Crispy fried momos (6pcs)", img: "https://images.unsplash.com/photo-1626082929543-5bab0f006c42?auto=format&fit=crop&q=80&w=400" },
+            { id: 4, name: "Chicken Rice", price: 120, category: "Rice", desc: "Classic street style fried rice", img: "https://images.unsplash.com/photo-1603133872878-684f208fb74b?auto=format&fit=crop&q=80&w=400" },
+            { id: 5, name: "Pani Puri", price: 40, category: "Chaat", desc: "8pcs crispy puris with mint water", img: "https://images.unsplash.com/photo-1594589578635-c89b7804470b?auto=format&fit=crop&q=80&w=400" },
+            { id: 6, name: "Masal Puri", price: 50, category: "Chaat", desc: "Crushed puris in spicy peas gravy", img: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&q=80&w=400" },
+            { id: 7, name: "Kaalan", price: 60, category: "Chaat", desc: "Spicy mushroom fry street style", img: "https://images.unsplash.com/photo-1626806742517-5e60d5b9d36a?auto=format&fit=crop&q=80&w=400" }
+        ];
+
+        // --- Combo Data ---
+        const comboItems = [
+            { id: 101, name: "Family Feast Combo", price: 299, desc: "2 Chicken Rice + Fried Momos + Coke", img: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=600", tag: "BESTSELLER" },
+            { id: 102, name: "Chaat Attack Combo", price: 140, desc: "Pani Puri + Masal Puri + Kaalan", img: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=600" },
+            { id: 103, name: "Burger Buddy Combo", price: 180, desc: "2 Spicy Burgers + French Fries", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=600" }
+        ];
+
+        let cart = {}; 
+        let currentPaymentMode = null;
+        let activeCategory = 'All';
+
+        // --- 1. Renders ---
+        function setCategory(category) {
+            activeCategory = category;
+            
+            // Update pills UI
+            const buttons = document.querySelectorAll('#category-container button');
+            buttons.forEach(btn => {
+                if (btn.innerText === category) {
+                    btn.classList.add('category-active', 'bg-red-600', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-700');
+                } else {
+                    btn.classList.remove('category-active', 'bg-red-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                }
+            });
+
+            renderMenu();
+        }
+
+        function renderCombos() {
+            const container = document.getElementById('combo-container');
+            container.innerHTML = comboItems.map(item => {
+                const cartItem = cart[String(item.id)];
+                const qty = cartItem ? cartItem.qty : 0;
+
+                let buttonHTML;
+                if (qty > 0) {
+                     buttonHTML = `
+                        <div class="flex items-center bg-red-600 rounded-lg shadow overflow-hidden">
+                            <button onclick="updateQuantity('${item.id}', -1)" class="w-8 h-9 flex items-center justify-center text-white font-bold hover:bg-red-700 transition active:bg-red-800">-</button>
+                            <span class="w-8 h-9 flex items-center justify-center bg-red-600 text-white font-bold text-sm">${qty}</span>
+                            <button onclick="updateQuantity('${item.id}', 1)" class="w-8 h-9 flex items-center justify-center text-white font-bold hover:bg-red-700 transition active:bg-red-800">+</button>
+                        </div>
+                    `;
+                } else {
+                    buttonHTML = `
+                        <button onclick="addCombo(${item.id})" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-200 transition">Add +</button>
+                    `;
+                }
+
+                return `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border-2 border-orange-100 food-card-hover group flex flex-col">
+                    <div class="h-40 bg-orange-100 flex items-center justify-center relative overflow-hidden">
+                        <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        ${item.tag ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">${item.tag}</span>` : ''}
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-xl mb-1">${item.name}</h3>
+                            <p class="text-sm text-gray-500 mb-3">${item.desc}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 h-9">
+                            <span class="text-red-600 font-bold text-xl">₹${item.price}</span>
+                            ${buttonHTML}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            
+            // Filter Items
+            const filteredItems = activeCategory === 'All' 
+                ? menuItems 
+                : menuItems.filter(item => item.category === activeCategory);
+
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">No items found in ${activeCategory}</div>`;
+                return;
+            }
+
+            container.innerHTML = filteredItems.map(item => {
+                // Check if item is in cart
+                const cartItem = cart[String(item.id)];
+                const qty = cartItem ? cartItem.qty : 0;
+
+                // Determine Button State (Add OR Counter)
+                let buttonHTML;
+                if (qty > 0) {
+                    buttonHTML = `
+                        <div class="flex items-center bg-red-600 rounded-lg shadow overflow-hidden">
+                            <button onclick="updateQuantity('${item.id}', -1)" class="w-8 h-9 flex items-center justify-center text-white font-bold hover:bg-red-700 transition active:bg-red-800">-</button>
+                            <span class="w-8 h-9 flex items-center justify-center bg-red-600 text-white font-bold text-sm">${qty}</span>
+                            <button onclick="updateQuantity('${item.id}', 1)" class="w-8 h-9 flex items-center justify-center text-white font-bold hover:bg-red-700 transition active:bg-red-800">+</button>
+                        </div>
+                    `;
+                } else {
+                    buttonHTML = `
+                        <button onclick="addMenuItem(${item.id})" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-red-700 active:scale-95 transition">
+                            Add
+                        </button>
+                    `;
+                }
+
+                return `
+                <div class="bg-white rounded-xl shadow border border-gray-100 overflow-hidden flex sm:flex-col food-card-hover group">
+                    <div class="w-1/3 sm:w-full sm:h-48 relative overflow-hidden">
+                        <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="w-2/3 sm:w-full p-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800 leading-tight">${item.name}</h3>
+                            <p class="text-xs text-gray-500 mt-1 mb-2 line-clamp-2">${item.desc}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 h-9">
+                            <span class="text-lg font-bold text-gray-900">₹${item.price}</span>
+                            ${buttonHTML}
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            
+            lucide.createIcons();
+        }
+
+        // --- 2. Add Logic ---
+        function addCombo(id) {
+            const item = comboItems.find(i => i.id === id);
+            if(item) {
+                addItemToCart(item.id, item.name, item.price);
+            }
+        }
+
+        function addMenuItem(id) {
+            const item = menuItems.find(i => i.id === id);
+            if (item) {
+                addItemToCart(item.id, item.name, item.price);
+            }
+        }
+
+        function addItemToCart(id, name, price) {
+            const safeId = String(id);
+            if (cart[safeId]) {
+                cart[safeId].qty++;
+            } else {
+                cart[safeId] = { id: safeId, name: name, price: price, qty: 1 };
+            }
+            updateCartUI();
+        }
+
+        // --- 3. UI Updates ---
+        function updateQuantity(id, change) {
+            const safeId = String(id);
+            if (cart[safeId]) {
+                cart[safeId].qty += change;
+                if (cart[safeId].qty <= 0) {
+                    delete cart[safeId];
+                }
+                updateCartUI();
+            }
+        }
+
+        function getCartTotal() {
+            return Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0);
+        }
+
+        function updateCartUI() {
+            const items = Object.values(cart);
+            const total = getCartTotal();
+            const count = items.reduce((sum, item) => sum + item.qty, 0);
+            
+            // Badge
+            const badge = document.getElementById('cart-badge');
+            badge.innerText = count;
+            badge.classList.toggle('hidden', count === 0);
+            if (count > 0) {
+                badge.classList.remove('animate-bounce-short');
+                void badge.offsetWidth;
+                badge.classList.add('animate-bounce-short');
+            }
+
+            // Bottom Sticky Bar
+            const bottomCart = document.getElementById('bottom-cart');
+            document.getElementById('sticky-total').innerText = `₹${total}`;
+            document.getElementById('sticky-count').innerText = `${count} Items`;
+            
+            if (count > 0) {
+                bottomCart.classList.remove('translate-y-full');
+            } else {
+                bottomCart.classList.add('translate-y-full');
+            }
+
+            // Render Cart Modal
+            renderCartModal(items, total);
+
+            // Re-render Menu & Combos to show updated buttons (Add vs Counter)
+            renderMenu();
+            renderCombos();
+        }
+
+        function renderCartModal(items, total) {
+            const container = document.getElementById('cart-items-container');
+            if (items.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400"><i data-lucide="shopping-basket" class="w-16 h-16 mb-4 opacity-50"></i><p>Your cart is empty</p><button onclick="toggleCart()" class="mt-4 text-red-600 font-semibold text-sm">Browse Menu</button></div>`;
+                lucide.createIcons();
+                document.getElementById('modal-subtotal').innerText = '₹0';
+                document.getElementById('modal-total').innerText = '₹0';
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <div class="flex-1">
+                        <p class="font-bold text-gray-800">${item.name}</p>
+                        <p class="text-sm text-gray-500">₹${item.price} x ${item.qty}</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
+                        <button onclick="updateQuantity('${item.id}', -1)" class="w-8 h-8 flex items-center justify-center text-red-600 font-bold hover:bg-red-50 rounded transition">-</button>
+                        <span class="font-semibold text-sm w-4 text-center">${item.qty}</span>
+                        <button onclick="updateQuantity('${item.id}', 1)" class="w-8 h-8 flex items-center justify-center text-green-600 font-bold hover:bg-green-50 rounded transition">+</button>
+                    </div>
+                    <div class="w-16 text-right font-bold text-gray-700">₹${item.price * item.qty}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('modal-subtotal').innerText = `₹${total}`;
+            document.getElementById('modal-total').innerText = `₹${total}`;
+        }
+
+        // --- 4. Payment & Order Logic ---
+
+        function openPaymentModal() {
+            const items = Object.values(cart);
+            if (items.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            
+            toggleCart(); 
+            document.getElementById('payment-modal').classList.remove('hidden');
+            document.getElementById('payment-amount').innerText = `₹${getCartTotal()}`;
+            
+            // Reset
+            currentPaymentMode = null;
+            document.getElementById('radio-online').checked = false;
+            document.getElementById('radio-cod').checked = false;
+            document.getElementById('qr-section').classList.add('hidden');
+            document.getElementById('utr-section').classList.add('hidden');
+            document.getElementById('payment-ref').value = '';
+            
+            const btn = document.getElementById('confirm-order-btn');
+            btn.disabled = true;
+            btn.innerText = "Select Payment Method";
+            btn.className = "w-full bg-gray-300 text-gray-600 py-3 rounded-xl font-bold mt-4 cursor-not-allowed";
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function selectPayment(mode) {
+            currentPaymentMode = mode;
+            document.getElementById(`radio-${mode}`).checked = true;
+            const btn = document.getElementById('confirm-order-btn');
+            const total = getCartTotal();
+            const qrSection = document.getElementById('qr-section');
+            const utrSection = document.getElementById('utr-section');
+
+            if (mode === 'cod') {
+                qrSection.classList.add('hidden');
+                utrSection.classList.add('hidden');
+                
+                btn.innerText = "Place Order (COD)";
+                btn.className = "w-full bg-green-600 text-white hover:bg-green-700 py-3 rounded-xl font-bold mt-4 shadow-lg transition";
+                btn.disabled = false;
+            } else {
+                utrSection.classList.remove('hidden');
+                btn.innerText = "Pay & Verify"; 
+                btn.className = "w-full bg-blue-600 text-white hover:bg-blue-700 py-3 rounded-xl font-bold mt-4 shadow-lg transition";
+                btn.disabled = false;
+
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (!isMobile) {
+                    qrSection.classList.remove('hidden');
+                    const upiLink = `upi://pay?pa=9080589580@superyes&pn=RaakFastFood&am=${total}.00&cu=INR`;
+                    document.getElementById("qrcode").innerHTML = "";
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: upiLink,
+                        width: 150,
+                        height: 150,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                } else {
+                    qrSection.classList.add('hidden');
+                }
+            }
+        }
+
+        function processOrder() {
+            const total = getCartTotal();
+            const refInput = document.getElementById('payment-ref');
+            const refNo = refInput.value.trim();
+
+            if (currentPaymentMode === 'online') {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    const upiLink = `upi://pay?pa=9080589580@superyes&pn=RaakFastFood&am=${total}.00&cu=INR`;
+                    
+                    if (refNo === '') {
+                        window.location.href = upiLink;
+                        setTimeout(() => {
+                             alert("Payment Initiated! \n\nPlease check your PhonePe/UPI app for the 'Transaction ID' or 'UTR' and enter it in the box to verify.");
+                             document.getElementById('payment-ref').focus();
+                        }, 1000);
+                        return; 
+                    }
+                } 
+                
+                if (refNo === '') {
+                    alert("Verification Required: Please enter the UTR / Transaction ID from your PhonePe app.");
+                    refInput.focus();
+                    return;
+                }
+
+                sendWhatsAppMessage(`Online Payment (UPI) - Ref: ${refNo}`);
+            } else {
+                sendWhatsAppMessage("Cash on Delivery");
+            }
+        }
+
+        function sendWhatsAppMessage(paymentMode) {
+            const items = Object.values(cart);
+            const total = getCartTotal();
+            let message = `*New Order @ Raak Fast Food* 🍔\n--------------------------------\n`;
+            
+            items.forEach(item => {
+                message += `${item.name} x ${item.qty} = ₹${item.price * item.qty}\n`;
+            });
+
+            message += `--------------------------------\n*Total Value: ₹${total}*\n--------------------------------\n`;
+            message += `*Payment Mode:* ${paymentMode}\n`;
+            
+            message += `--------------------------------\nPlease confirm my order!`;
+
+            const phoneNumber = "919080589580";
+            const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            
+            window.open(url, '_blank');
+            closePaymentModal();
+        }
+
+        // --- Misc ---
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            const isHidden = modal.classList.contains('hidden');
+            
+            if (isHidden) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; 
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; 
+            }
+        }
+
+        // Init
+        // Use timeout to ensure icons load if scripts are slow
+        setTimeout(() => {
+            setCategory('All');
+            renderCombos();
+        }, 100);
+
+    </script>
+</body>
+</html>
